@@ -1,10 +1,10 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ControllerCalculo;
 
 Route::get('/', function () {
     return view('index');
 });
 
-Route::post('/calcular', [App\Http\Controllers\ControllerCalculo::class, 'Calcular'])->name('calcular');
+Route::post('/calcular', [ControllerCalculo::class, 'calcular'])->name('calcular');
 
