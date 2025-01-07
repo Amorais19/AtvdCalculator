@@ -6,33 +6,36 @@ use Illuminate\Http\Request;
 
 class ControllerCalculo extends Controller
 {
-    public function Calcular(Request $request)
-    {
-        $nome = $request->input('nome');
-        $emprestimo = $request->input('valor_emprestimo');
-        $juros = $request->input('taxa_juros') / 100;
-        $parcelas = $request->input('quantidade_parcelas');
+    public function calcular(Request $request)
+{
+    $nome = $request->input('nome');
+    $emprestimo = $request->input('valor_emprestimo');
+    $juros = $request->input('taxa_juros') / 100;
+    $parcelas = $request->input('quantidade_parcelas');
 
-        $resultados = [];
-        $montante = $emprestimo;
+    $saldoDevedor = $emprestimo;
+    $resultados = [];
+    $totalPago = 0;
 
-        for ($i = 1; $i <= $parcelas; $i++) {
-            $jurosMensal = $montante * $juros;
-            $montante += $jurosMensal;
-            $parcela = $montante / $parcelas;
+    for ($i = 1; $i <= $parcelas; $i++) {
+        $jurosMensal = $saldoDevedor * $juros;
+        $valorAtualizado = $saldoDevedor + $jurosMensal;
+        $parcela = $valorAtualizado / ($parcelas - $i + 1);
+        $saldoDevedor = $valorAtualizado - $parcela;
 
-            $resultados[] = [
-                'parcela' => $i,
-                'restante' => number_format($montante - $parcela * ($parcelas - $i), 2),
-                'juros' => number_format($jurosMensal, 2),
-                'valor_parcela' => number_format($parcela, 2),
-            ];
+        $resultados[] = [
+            'parcela' => $i,
+            'valor_atualizado' => number_format($valorAtualizado, 2, ',', '.'),
+            'juros' => number_format($jurosMensal, 2, ',', '.'),
+            'valor_parcela' => number_format($parcela, 2, ',', '.'),
+            'restante' => number_format($saldoDevedor, 2, ',', '.'),
+        ];
 
-            $montante -= $parcela;
-        }
-
-        $totalPago = array_sum(array_column($resultados, 'valor_parcela'));
-
-        return view('resposta', compact('nome', 'emprestimo', 'resultados', 'totalPago'));
+        $totalPago += $parcela;
     }
+
+    $totalPago = number_format($totalPago, 2, ',', '.');
+
+    return view('resposta', compact('nome', 'emprestimo', 'resultados', 'totalPago'));
+}
 }
